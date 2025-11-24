@@ -1,0 +1,43 @@
+name: taskflow_app
+description: A new Flutter project.
+publish_to: 'none' 
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # --- Firebase ---
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+
+  # --- Architecture & State ---
+  flutter_riverpod: ^2.6.1       # State Management
+  freezed_annotation: ^2.4.4     # Data Class Generator
+  json_annotation: ^4.9.0        # JSON Parsing
+  
+  # --- AI & Utilities ---
+  google_generative_ai: ^0.4.0   # Official Gemini SDK
+  uuid: ^4.5.1                   # For generating IDs locally
+  intl: ^0.19.0                  # Date formatting
+  
+  # --- UI ---
+  cupertino_icons: ^1.0.8
+  http: ^1.6.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  
+  # --- Code Generation ---
+  build_runner: ^2.4.12          # Required to run the generator
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+
+flutter:
+  uses-material-design: true
