@@ -7,17 +7,14 @@ import 'package:taskflow_app/features/create_project/create_project_screen.dart'
 import 'package:taskflow_app/providers/app_providers.dart';
 import 'package:taskflow_app/widgets/sidebar.dart';
 
-final authStateChangesProvider = StreamProvider<User?>((ref) {
-  return FirebaseAuth.instance.authStateChanges();
-});
 
 final projectListProvider = StreamProvider<List<ProjectModel>>((ref) {
-  final authState = ref.watch(authStateChangesProvider);
+final authState = ref.watch(authStateChangesProvider); 
 
   return authState.when(
     data: (user) {
       if (user == null) {
-        return const Stream.empty();
+        return const Stream.empty(); 
       }
       return ref.watch(projectRepoProvider).watchProjects(user.uid);
     },

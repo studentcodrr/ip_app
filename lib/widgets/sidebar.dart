@@ -10,10 +10,8 @@ import 'package:taskflow_app/models/project_model.dart';
 import 'package:taskflow_app/models/search_history_model.dart'; 
 import 'package:taskflow_app/features/project_features/project_board_screen.dart';
 
-final authStateProvider = StreamProvider<User?>((ref) => FirebaseAuth.instance.authStateChanges());
-
 final sidebarProjectsProvider = StreamProvider<List<ProjectModel>>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final authState = ref.watch(authStateChangesProvider); 
   
   return authState.when(
     data: (user) {
@@ -26,7 +24,7 @@ final sidebarProjectsProvider = StreamProvider<List<ProjectModel>>((ref) {
 });
 
 final sidebarHistoryProvider = StreamProvider<List<SearchHistoryModel>>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final authState = ref.watch(authStateChangesProvider); 
 
   return authState.when(
     data: (user) {
