@@ -1,2 +1,2 @@
-# m-ec-project
-Mobile and Embedded Computing project: TaskFlow - A Team Task Management App
+# ip_app
+Taskflow - AI powered task management app
