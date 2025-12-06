@@ -26,15 +26,7 @@ mixin _$TaskModel {
   String get ownerId => throw _privateConstructorUsedError;
   TaskStatus get status => throw _privateConstructorUsedError;
   Priority get priority => throw _privateConstructorUsedError;
-  @JsonKey(
-    fromJson: _nullableTimestampFromJson,
-    toJson: _nullableTimestampToJson,
-  )
   DateTime? get startDate => throw _privateConstructorUsedError;
-  @JsonKey(
-    fromJson: _nullableTimestampFromJson,
-    toJson: _nullableTimestampToJson,
-  )
   DateTime? get endDate => throw _privateConstructorUsedError;
   List<String> get dependencies => throw _privateConstructorUsedError;
   double get orderIndex => throw _privateConstructorUsedError;
@@ -60,15 +52,7 @@ abstract class $TaskModelCopyWith<$Res> {
     String ownerId,
     TaskStatus status,
     Priority priority,
-    @JsonKey(
-      fromJson: _nullableTimestampFromJson,
-      toJson: _nullableTimestampToJson,
-    )
     DateTime? startDate,
-    @JsonKey(
-      fromJson: _nullableTimestampFromJson,
-      toJson: _nullableTimestampToJson,
-    )
     DateTime? endDate,
     List<String> dependencies,
     double orderIndex,
@@ -159,15 +143,7 @@ abstract class _$$TaskModelImplCopyWith<$Res>
     String ownerId,
     TaskStatus status,
     Priority priority,
-    @JsonKey(
-      fromJson: _nullableTimestampFromJson,
-      toJson: _nullableTimestampToJson,
-    )
     DateTime? startDate,
-    @JsonKey(
-      fromJson: _nullableTimestampFromJson,
-      toJson: _nullableTimestampToJson,
-    )
     DateTime? endDate,
     List<String> dependencies,
     double orderIndex,
@@ -250,15 +226,7 @@ class _$TaskModelImpl extends _TaskModel {
     required this.ownerId,
     this.status = TaskStatus.notStarted,
     this.priority = Priority.medium,
-    @JsonKey(
-      fromJson: _nullableTimestampFromJson,
-      toJson: _nullableTimestampToJson,
-    )
     this.startDate,
-    @JsonKey(
-      fromJson: _nullableTimestampFromJson,
-      toJson: _nullableTimestampToJson,
-    )
     this.endDate,
     final List<String> dependencies = const [],
     required this.orderIndex,
@@ -281,16 +249,8 @@ class _$TaskModelImpl extends _TaskModel {
   @JsonKey()
   final Priority priority;
   @override
-  @JsonKey(
-    fromJson: _nullableTimestampFromJson,
-    toJson: _nullableTimestampToJson,
-  )
   final DateTime? startDate;
   @override
-  @JsonKey(
-    fromJson: _nullableTimestampFromJson,
-    toJson: _nullableTimestampToJson,
-  )
   final DateTime? endDate;
   final List<String> _dependencies;
   @override
@@ -367,15 +327,7 @@ abstract class _TaskModel extends TaskModel {
     required final String ownerId,
     final TaskStatus status,
     final Priority priority,
-    @JsonKey(
-      fromJson: _nullableTimestampFromJson,
-      toJson: _nullableTimestampToJson,
-    )
     final DateTime? startDate,
-    @JsonKey(
-      fromJson: _nullableTimestampFromJson,
-      toJson: _nullableTimestampToJson,
-    )
     final DateTime? endDate,
     final List<String> dependencies,
     required final double orderIndex,
@@ -396,16 +348,8 @@ abstract class _TaskModel extends TaskModel {
   @override
   Priority get priority;
   @override
-  @JsonKey(
-    fromJson: _nullableTimestampFromJson,
-    toJson: _nullableTimestampToJson,
-  )
   DateTime? get startDate;
   @override
-  @JsonKey(
-    fromJson: _nullableTimestampFromJson,
-    toJson: _nullableTimestampToJson,
-  )
   DateTime? get endDate;
   @override
   List<String> get dependencies;

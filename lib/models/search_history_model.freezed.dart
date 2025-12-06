@@ -22,8 +22,10 @@ SearchHistoryModel _$SearchHistoryModelFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$SearchHistoryModel {
   String get id => throw _privateConstructorUsedError;
-  String get description => throw _privateConstructorUsedError;
-  String get strategy => throw _privateConstructorUsedError;
+  String get description =>
+      throw _privateConstructorUsedError; // <input> // Added Default
+  String get strategy =>
+      throw _privateConstructorUsedError; // <input> // Added Default
   @JsonKey(fromJson: _fromJsonTimestamp, toJson: _toJsonTimestamp)
   DateTime get createdAt => throw _privateConstructorUsedError;
 
@@ -162,8 +164,8 @@ class __$$SearchHistoryModelImplCopyWithImpl<$Res>
 class _$SearchHistoryModelImpl implements _SearchHistoryModel {
   const _$SearchHistoryModelImpl({
     required this.id,
-    required this.description,
-    required this.strategy,
+    this.description = 'Unknown Prompt',
+    this.strategy = '',
     @JsonKey(fromJson: _fromJsonTimestamp, toJson: _toJsonTimestamp)
     required this.createdAt,
   });
@@ -174,9 +176,13 @@ class _$SearchHistoryModelImpl implements _SearchHistoryModel {
   @override
   final String id;
   @override
+  @JsonKey()
   final String description;
+  // <input> // Added Default
   @override
+  @JsonKey()
   final String strategy;
+  // <input> // Added Default
   @override
   @JsonKey(fromJson: _fromJsonTimestamp, toJson: _toJsonTimestamp)
   final DateTime createdAt;
@@ -225,8 +231,8 @@ class _$SearchHistoryModelImpl implements _SearchHistoryModel {
 abstract class _SearchHistoryModel implements SearchHistoryModel {
   const factory _SearchHistoryModel({
     required final String id,
-    required final String description,
-    required final String strategy,
+    final String description,
+    final String strategy,
     @JsonKey(fromJson: _fromJsonTimestamp, toJson: _toJsonTimestamp)
     required final DateTime createdAt,
   }) = _$SearchHistoryModelImpl;
@@ -237,9 +243,9 @@ abstract class _SearchHistoryModel implements SearchHistoryModel {
   @override
   String get id;
   @override
-  String get description;
+  String get description; // <input> // Added Default
   @override
-  String get strategy;
+  String get strategy; // <input> // Added Default
   @override
   @JsonKey(fromJson: _fromJsonTimestamp, toJson: _toJsonTimestamp)
   DateTime get createdAt;

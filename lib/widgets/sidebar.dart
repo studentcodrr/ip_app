@@ -2,18 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import 'package:taskflow_app/providers/app_providers.dart';
 import 'package:taskflow_app/features/dashboard/dashboard_screen.dart';
 import 'package:taskflow_app/features/create_project/create_project_screen.dart';
 import 'package:taskflow_app/settings_screen.dart';
 import 'package:taskflow_app/models/project_model.dart';
 import 'package:taskflow_app/models/search_history_model.dart'; 
 import 'package:taskflow_app/features/project_features/project_board_screen.dart';
+import 'package:taskflow_app/providers/app_providers.dart';
 
-final authStateProvider = StreamProvider<User?>((ref) => FirebaseAuth.instance.authStateChanges());
+//<input> // Hide duplicate providers to resolve "Ambiguous Import" error
+import 'package:taskflow_app/repositories/project_repository.dart' hide projectRepoProvider;
+import 'package:taskflow_app/repositories/history_repository.dart' hide historyRepoProvider; 
+
+//<input> // Removed local authStateProvider; using centralized authStateChangesProvider
 
 final sidebarProjectsProvider = StreamProvider<List<ProjectModel>>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final authState = ref.watch(authStateChangesProvider);
   
   return authState.when(
     data: (user) {
@@ -26,7 +30,7 @@ final sidebarProjectsProvider = StreamProvider<List<ProjectModel>>((ref) {
 });
 
 final sidebarHistoryProvider = StreamProvider<List<SearchHistoryModel>>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final authState = ref.watch(authStateChangesProvider);
 
   return authState.when(
     data: (user) {
@@ -50,8 +54,10 @@ class Sidebar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    
     final projectsAsync = ref.watch(sidebarProjectsProvider);
     final historyAsync = ref.watch(sidebarHistoryProvider);
+    
     final user = FirebaseAuth.instance.currentUser;
 
     return Drawer(

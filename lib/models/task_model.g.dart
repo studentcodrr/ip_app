@@ -17,8 +17,12 @@ _$TaskModelImpl _$$TaskModelImplFromJson(Map<String, dynamic> json) =>
       priority:
           $enumDecodeNullable(_$PriorityEnumMap, json['priority']) ??
           Priority.medium,
-      startDate: _nullableTimestampFromJson(json['startDate']),
-      endDate: _nullableTimestampFromJson(json['endDate']),
+      startDate: json['startDate'] == null
+          ? null
+          : DateTime.parse(json['startDate'] as String),
+      endDate: json['endDate'] == null
+          ? null
+          : DateTime.parse(json['endDate'] as String),
       dependencies:
           (json['dependencies'] as List<dynamic>?)
               ?.map((e) => e as String)
@@ -34,8 +38,8 @@ Map<String, dynamic> _$$TaskModelImplToJson(_$TaskModelImpl instance) =>
       'ownerId': instance.ownerId,
       'status': _$TaskStatusEnumMap[instance.status]!,
       'priority': _$PriorityEnumMap[instance.priority]!,
-      'startDate': _nullableTimestampToJson(instance.startDate),
-      'endDate': _nullableTimestampToJson(instance.endDate),
+      'startDate': instance.startDate?.toIso8601String(),
+      'endDate': instance.endDate?.toIso8601String(),
       'dependencies': instance.dependencies,
       'orderIndex': instance.orderIndex,
     };

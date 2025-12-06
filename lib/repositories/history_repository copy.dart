@@ -16,7 +16,7 @@ class HistoryRepository {
         .add({
           'description': description,
           'strategy': strategy,
-          'createdAt': FieldValue.serverTimestamp(),
+          'createdAt':  FieldValue.serverTimestamp(),
         });
   }
 
@@ -26,7 +26,7 @@ class HistoryRepository {
         .doc(userId)
         .collection('search_history')
         .orderBy('createdAt', descending: true)
-        .limit(30) // <input> // Removed .where() filter to allow optimistic (null date) updates to show instantly
+        .limit(30)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => SearchHistoryModel.fromFirestore(doc))

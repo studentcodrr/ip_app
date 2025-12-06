@@ -22,8 +22,8 @@ GroupModel _$GroupModelFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$GroupModel {
   String get id => throw _privateConstructorUsedError;
-  String get name => throw _privateConstructorUsedError; // Added Default
-  double get orderIndex => throw _privateConstructorUsedError; // Added Default
+  String get name => throw _privateConstructorUsedError;
+  double get orderIndex => throw _privateConstructorUsedError;
   int get colorValue => throw _privateConstructorUsedError;
 
   /// Serializes this GroupModel to a JSON map.
@@ -162,11 +162,9 @@ class _$GroupModelImpl implements _GroupModel {
   @override
   @JsonKey()
   final String name;
-  // Added Default
   @override
   @JsonKey()
   final double orderIndex;
-  // Added Default
   @override
   @JsonKey()
   final int colorValue;
@@ -222,9 +220,9 @@ abstract class _GroupModel implements GroupModel {
   @override
   String get id;
   @override
-  String get name; // Added Default
+  String get name;
   @override
-  double get orderIndex; // Added Default
+  double get orderIndex;
   @override
   int get colorValue;
 

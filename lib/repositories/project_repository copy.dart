@@ -122,22 +122,16 @@ class ProjectRepository {
   ) async {
     final batch = _firestore.batch();
 
-    // 1. PROJECT MODEL SAVE
     final projectRef = _firestore
         .collection('projects')
         .doc(project.id.isEmpty ? null : project.id);
-    
-    // Convert Project Model's data fields
-    final projectJson = project.toJson()..remove('id');
-    
-    // CRITICAL FIX: Convert Project's required DateTime field explicitly
-    projectJson['createdAt'] = Timestamp.fromDate(project.createdAt);
+    batch.set(
+      projectRef,
+      project.toJson()..remove('id'),
+    ); 
 
-    batch.set(projectRef, projectJson); 
-
-    // 2. GROUP AND TASK MODELS SAVE
     for (var group in groups) {
-      final groupRef = projectRef.collection('groups').doc(); 
+      final groupRef = projectRef.collection('groups').doc();
       batch.set(
         groupRef,
         group.copyWith(id: groupRef.id).toJson()..remove('id'),
@@ -147,19 +141,15 @@ class ProjectRepository {
 
       for (var task in tasks) {
         final taskRef = groupRef.collection('tasks').doc();
-        
-        // Prepare task JSON
-        final taskJson = task.toJson()..remove('id');
-        
-        // CRITICAL FIX: Convert Task's nullable DateTime fields explicitly
-        taskJson['startDate'] = task.startDate != null
+        final json = task.toJson()..remove('id');
+        json['startDate'] = task.startDate != null
             ? Timestamp.fromDate(task.startDate!)
             : null;
-        taskJson['endDate'] = task.endDate != null
+        json['endDate'] = task.endDate != null
             ? Timestamp.fromDate(task.endDate!)
             : null;
 
-        batch.set(taskRef, taskJson);
+        batch.set(taskRef, json);
       }
     }
     await batch.commit();

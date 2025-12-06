@@ -7,11 +7,14 @@ import 'package:taskflow_app/features/create_project/create_project_screen.dart'
 import 'package:taskflow_app/providers/app_providers.dart';
 import 'package:taskflow_app/widgets/sidebar.dart';
 
+
 final authStateChangesProvider = StreamProvider<User?>((ref) {
   return FirebaseAuth.instance.authStateChanges();
 });
-
+// --- PROJECT LIST PROVIDER ---
+// This remains local because it's specific to the dashboard logic
 final projectListProvider = StreamProvider<List<ProjectModel>>((ref) {
+  // 1. Use the central Auth Provider
   final authState = ref.watch(authStateChangesProvider);
 
   return authState.when(
@@ -19,6 +22,7 @@ final projectListProvider = StreamProvider<List<ProjectModel>>((ref) {
       if (user == null) {
         return const Stream.empty();
       }
+      // 2. Use the central Repo Provider
       return ref.watch(projectRepoProvider).watchProjects(user.uid);
     },
     loading: () => const Stream.empty(),

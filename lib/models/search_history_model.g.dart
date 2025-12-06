@@ -10,8 +10,8 @@ _$SearchHistoryModelImpl _$$SearchHistoryModelImplFromJson(
   Map<String, dynamic> json,
 ) => _$SearchHistoryModelImpl(
   id: json['id'] as String,
-  description: json['description'] as String,
-  strategy: json['strategy'] as String,
+  description: json['description'] as String? ?? 'Unknown Prompt',
+  strategy: json['strategy'] as String? ?? '',
   createdAt: _fromJsonTimestamp(json['createdAt']),
 );
 

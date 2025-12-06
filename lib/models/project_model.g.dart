@@ -14,6 +14,8 @@ _$ProjectModelImpl _$$ProjectModelImplFromJson(Map<String, dynamic> json) =>
       ownerId: json['ownerId'] as String,
       colorValue: (json['colorValue'] as num?)?.toInt() ?? 0xFF42A5F5,
       createdAt: _fromJsonTimestamp(json['createdAt']),
+      auditScore: (json['auditScore'] as num?)?.toInt() ?? 0,
+      auditFeedback: json['auditFeedback'] as String? ?? '',
     );
 
 Map<String, dynamic> _$$ProjectModelImplToJson(_$ProjectModelImpl instance) =>
@@ -24,4 +26,6 @@ Map<String, dynamic> _$$ProjectModelImplToJson(_$ProjectModelImpl instance) =>
       'ownerId': instance.ownerId,
       'colorValue': instance.colorValue,
       'createdAt': _toJsonTimestamp(instance.createdAt),
+      'auditScore': instance.auditScore,
+      'auditFeedback': instance.auditFeedback,
     };

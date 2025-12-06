@@ -4,10 +4,10 @@ WORKDIR /app
 
 COPY . .
 
-#Install dependencies
+#dependencies
 RUN pip install -r requirements.txt
 
-#Port
+#port
 EXPOSE 5000
 
 CMD ["python", "app.py"]

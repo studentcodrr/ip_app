@@ -8,8 +8,8 @@ part 'search_history_model.g.dart';
 class SearchHistoryModel with _$SearchHistoryModel {
   const factory SearchHistoryModel({
     required String id,
-    required String description,
-    required String strategy,
+    @Default('Unknown Prompt') String description, // <input> // Added Default
+    @Default('') String strategy,                  // <input> // Added Default
     @JsonKey(fromJson: _fromJsonTimestamp, toJson: _toJsonTimestamp)
     required DateTime createdAt,
   }) = _SearchHistoryModel;
@@ -25,5 +25,11 @@ class SearchHistoryModel with _$SearchHistoryModel {
   }
 }
 
-DateTime _fromJsonTimestamp(dynamic timestamp) => (timestamp as Timestamp).toDate();
+// Robust Timestamp Conversion
+DateTime _fromJsonTimestamp(dynamic timestamp) {
+  if (timestamp == null) return DateTime.now(); // Handle optimistic UI (pending write)
+  if (timestamp is Timestamp) return timestamp.toDate(); // Handle standard Firestore Timestamp
+  return DateTime.now(); // Fallback for any other garbage data
+}
+
 dynamic _toJsonTimestamp(DateTime date) => Timestamp.fromDate(date);

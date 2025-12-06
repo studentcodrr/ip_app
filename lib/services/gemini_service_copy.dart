@@ -1,15 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
-import 'package:taskflow_app/models/project_model.dart';
-import 'package:taskflow_app/models/group_model.dart';
-import 'package:taskflow_app/models/task_model.dart';
+
+import '../models/project_model.dart';
+import '../models/group_model.dart';
+import '../models/task_model.dart';
 
 class GeminiService {
   final Uuid _uuid = const Uuid();
-  final http.Client _client; 
-
-  GeminiService({http.Client? client}) : _client = client ?? http.Client();
+  GeminiService();
 
   static const String backendUrl = "http://127.0.0.1:5000/generate-plan";
 
@@ -19,7 +18,7 @@ class GeminiService {
   ) async {
     final uri = Uri.parse(backendUrl);
 
-    final response = await _client.post(
+    final response = await http.post(
       uri,
       headers: {
         "Content-Type": "application/json",
@@ -37,6 +36,7 @@ class GeminiService {
     }
 
     final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+
     return _parseModels(jsonResponse);
   }
 
@@ -49,9 +49,6 @@ class GeminiService {
       description: "AI-generated project plan",
       ownerId: "current_user_id",
       createdAt: now,
-      //<input> // Map Audit Fields
-      auditScore: json['audit_score'] as int? ?? 0,
-      auditFeedback: json['audit_feedback'] as String? ?? '',
     );
 
     final List<GroupModel> groups = [];
@@ -63,8 +60,6 @@ class GeminiService {
       final gData = rawGroups[i];
       final groupId = _uuid.v4();
       
-      final int phaseStartDay = gData["phaseStartDay"] as int? ?? (i * 7);
-
       groups.add(GroupModel(
         id: groupId,
         name: gData["groupName"] ?? "Untitled Phase",
@@ -77,8 +72,8 @@ class GeminiService {
       for (int j = 0; j < rawTasks.length; j++) {
         final tData = rawTasks[j];
         final duration = tData["durationDays"] as int? ?? 1;
-        final startOffset = tData["startDayOffset"] as int? ?? 0;
-        final taskStart = now.add(Duration(days: phaseStartDay + startOffset));
+        
+        final taskStart = now.add(Duration(days: i * 7));
 
         taskList.add(TaskModel(
           id: "",

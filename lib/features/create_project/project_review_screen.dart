@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../providers/app_providers.dart';
-import 'create_project_controller.dart'; 
-import '../../models/task_model.dart'; 
+import 'package:taskflow_app/providers/app_providers.dart';
+import 'package:taskflow_app/features/create_project/create_project_controller.dart'; 
+import 'package:taskflow_app/models/task_model.dart'; 
 
 class ProjectReviewScreen extends ConsumerStatefulWidget {
   final ProjectProposal proposal;
@@ -48,6 +48,13 @@ class _ProjectReviewScreenState extends ConsumerState<ProjectReviewScreen> {
     final project = widget.proposal.project;
     final groups = widget.proposal.groups;
     final tasksMap = widget.proposal.tasksByGroup;
+
+    final int score = project.auditScore;
+    final String feedback = project.auditFeedback;
+    
+    final Color statusColor = score >= 80 ? Colors.green 
+                            : score >= 50 ? Colors.orange 
+                            : Colors.red;
 
     return Scaffold(
       appBar: AppBar(title: const Text("Review Plan")),
@@ -96,12 +103,105 @@ class _ProjectReviewScreenState extends ConsumerState<ProjectReviewScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            //AUDIT REPORT
+            if (score > 0)
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: statusColor.withOpacity(0.3), width: 1),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          score >= 80 ? Icons.verified : Icons.warning_amber_rounded,
+                          color: statusColor,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Accuracy Score: $score%",
+                              style: TextStyle(
+                                fontSize: 18, 
+                                fontWeight: FontWeight.bold, 
+                                color: statusColor
+                              ),
+                            ),
+                            Text(
+                              score >= 80 ? "This plan looks solid." : "Review dates carefully.",
+                              style: TextStyle(
+                                fontSize: 12, 
+                                color: statusColor.withOpacity(0.8),
+                                fontWeight: FontWeight.w500
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    
+                    if (feedback.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      const Divider(),
+                      const SizedBox(height: 8),
+                      Text(
+                        "AI Feedback:",
+                        style: TextStyle(
+                          fontSize: 12, 
+                          fontWeight: FontWeight.bold, 
+                          color: Colors.black87.withOpacity(0.6)
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      
+                      ...feedback
+                          .split(RegExp(r'(?=Step \d+:)')) 
+                          .where((s) => s.trim().isNotEmpty)
+                          .map((step) {
+                            //Remove the "Step X:" 
+                            final cleanStep = step.replaceAll(RegExp(r'Step \d+:'), '').trim();
+                            
+                            return Padding(
+                                padding: const EdgeInsets.only(top: 6.0),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.only(top: 4.0, right: 8.0),
+                                      child: Icon(Icons.arrow_right, size: 16, color: Colors.blue),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        cleanStep.isEmpty ? step.trim() : cleanStep, // Fallback if regex fails
+                                        style: const TextStyle(fontSize: 13, height: 1.4),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                          }),
+                    ]
+                  ],
+                ),
+              ),
+
+            //PROJECT TITLE
             Text(
               project.name, 
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)
             ),
             const SizedBox(height: 16),
 
+            //PROMPTS DISPLAY
             Container(
               padding: const EdgeInsets.all(12),
               width: double.infinity,
@@ -121,6 +221,7 @@ class _ProjectReviewScreenState extends ConsumerState<ProjectReviewScreen> {
             ),
             const SizedBox(height: 24),
 
+            // --- 4. GROUPS LIST ---
             ...groups.map((group) {
               final tasks = tasksMap[group.id] ?? [];
               return Container(
