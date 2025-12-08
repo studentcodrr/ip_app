@@ -1,101 +1,85 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import json
+import pytest
+import requests_mock
+from unittest.mock import patch
 
-import 'package:taskflow_app/services/gemini_service.dart';
-import 'package:taskflow_app/models/project_model.dart';
-import 'package:taskflow_app/models/group_model.dart';
-import 'package:taskflow_app/models/task_model.dart';
+# Import your app
+from app import app, API_URL, SYSTEM_PROMPT_TEMPLATE, PROJECT_PLAN_SCHEMA
 
-//<input> // Annotation to generate the MockClient
-@GenerateMocks([http.Client])
-import 'gemini_service_test.mocks.dart';
+@pytest.fixture
+def client():
+    app.config['TESTING'] = True
+    with app.test_client() as client:
+        yield client
 
-void main() {
-  late GeminiService service;
-  late MockClient mockClient;
+# --- TEST 1: SUCCESSFUL GENERATION ---
+def test_generate_plan_success(client):
+    # Mock data that Gemini would return
+    mock_gemini_response = {
+        "candidates": [{
+            "content": {
+                "parts": [{
+                    "text": json.dumps({
+                        "projectName": "Test Project",
+                        "groups": []
+                    })
+                }]
+            }
+        }]
+    }
 
-  setUp(() {
-    mockClient = MockClient();
-    service = GeminiService(client: mockClient);
-  });
+    # Mock data that Groq would return
+    mock_groq_response = {
+        "choices": [{
+            "message": {
+                "content": json.dumps({
+                    "confidence_score": 90,
+                    "feedback": "Step 1: Good job.",
+                    "specific_issues": []
+                })
+            }
+        }]
+    }
 
-  const String validJsonResponse = '''
-  {
-    "projectName": "Test Project",
-    "groups": [
-      {
-        "groupName": "Phase 1",
-        "tasks": [
-          {
-            "taskName": "Task A",
-            "description": "Desc A",
-            "priority": "High",
-            "durationDays": 2
-          }
-        ]
-      }
-    ]
-  }
-  ''';
+    # We mock both external API calls
+    with requests_mock.Mocker() as m:
+        # Mock Gemini
+        m.post(API_URL, json=mock_gemini_response, status_code=200)
+        
+        # Mock Groq (using patch because it's a library call, not direct requests)
+        with patch('app.groq_client.chat.completions.create') as mock_groq:
+            # Setup the mock object structure to match Groq's response
+            mock_groq.return_value.choices = [type('obj', (object,), {'message': type('obj', (object,), {'content': mock_groq_response['choices'][0]['message']['content']})})()]
 
-  group('GeminiService Tests', () {
-    test('generateProjectStructure returns parsed models on 200 OK', () async {
-      // 1. Arrange
-      when(mockClient.post(
-        Uri.parse("http://127.0.0.1:5000/generate-plan"),
-        headers: anyNamed('headers'),
-        body: anyNamed('body'),
-      )).thenAnswer((_) async => http.Response(validJsonResponse, 200));
+            # Make the request to YOUR server
+            response = client.post('/generate-plan', json={
+                'description': 'Build a shed',
+                'strategy': 'Fast'
+            })
 
-      // 2. Act
-      final result = await service.generateProjectStructure("Build a house", "Fast");
+            # Assertions
+            assert response.status_code == 200
+            data = response.get_json()
+            assert data['projectName'] == "Test Project"
+            assert data['audit_score'] == 90
 
-      // 3. Assert
-      expect(result['project'], isA<ProjectModel>());
-      expect((result['project'] as ProjectModel).name, "Test Project");
-      
-      final groups = result['groups'] as List<GroupModel>;
-      expect(groups.length, 1);
-      expect(groups.first.name, "Phase 1");
+# --- TEST 2: MISSING INPUT ---
+def test_generate_plan_missing_input(client):
+    response = client.post('/generate-plan', json={})
+    assert response.status_code == 400
+    # <input> // FIXED: Matched the error message "Missing inputs" from app.py
+    assert "Missing inputs" in response.get_json()['error']
 
-      final tasksMap = result['tasksByGroup'] as Map<String, List<TaskModel>>;
-      final groupId = groups.first.id;
-      expect(tasksMap[groupId]?.length, 1);
-      expect(tasksMap[groupId]?.first.name, "Task A");
-      expect(tasksMap[groupId]?.first.priority, Priority.high);
-    });
+# --- TEST 3: GEMINI FAILURE ---
+def test_gemini_api_failure(client):
+    with requests_mock.Mocker() as m:
+        # Simulate Gemini crashing
+        m.post(API_URL, status_code=500, text="Internal Server Error")
 
-    test('generateProjectStructure throws Exception on non-200 response', () async {
-      // 1. Arrange
-      when(mockClient.post(
-        any,
-        headers: anyNamed('headers'),
-        body: anyNamed('body'),
-      )).thenAnswer((_) async => http.Response('Internal Server Error', 500));
+        response = client.post('/generate-plan', json={
+            'description': 'Fail me',
+            'strategy': 'Fast'
+        })
 
-      // 2. Act & Assert
-      expect(
-        () async => await service.generateProjectStructure("Test", "Test"),
-        throwsException,
-      );
-    });
-
-    test('generateProjectStructure throws FormatException on invalid JSON', () async {
-      // 1. Arrange
-      when(mockClient.post(
-        any,
-        headers: anyNamed('headers'),
-        body: anyNamed('body'),
-      )).thenAnswer((_) async => http.Response('Not JSON', 200));
-
-      // 2. Act & Assert
-      expect(
-        () async => await service.generateProjectStructure("Test", "Test"),
-        throwsA(isA<FormatException>()),
-      );
-    });
-  });
-}
+        assert response.status_code == 500
+        assert "500" in response.get_json()['error']

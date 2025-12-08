@@ -1,88 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../dashboard/dashboard_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:taskflow_app/features/auth/auth_controller.dart';
+import 'package:taskflow_app/features/dashboard/dashboard_screen.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   // Toggle between Login and Sign Up modes
   bool _isLoginMode = true;
-  bool _isLoading = false;
-  String? _errorMessage;
-
+  
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  // This handles:
-  // 1. Normal Login
-  // 2. Normal Registration
-  // 3. CONVERTING Anonymous account to Permanent (keeping data)
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final controller = ref.read(authControllerProvider.notifier);
 
-    try {
-      final auth = FirebaseAuth.instance;
-      final email = _emailController.text.trim();
-      final password = _passwordController.text.trim();
-
-      if (_isLoginMode) {
-        // --- LOG IN FLOW ---
-        await auth.signInWithEmailAndPassword(email: email, password: password);
-      } else {
-        // --- SIGN UP FLOW ---
-        
-        // Check if we are currently logged in anonymously
-        final currentUser = auth.currentUser;
-
-        if (currentUser != null && currentUser.isAnonymous) {
-          // MAGICAL STEP: This keeps your projects!
-          // We link the new email/password to the EXISTING anonymous user ID.
-          final credential = EmailAuthProvider.credential(email: email, password: password);
-          await currentUser.linkWithCredential(credential);
-        } else {
-          // Standard fresh registration
-          await auth.createUserWithEmailAndPassword(email: email, password: password);
-        }
-      }
-
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const DashboardScreen()),
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        if (e.code == 'credential-already-in-use') {
-          _errorMessage = 'This email is already linked to another account.';
-        } else if (e.code == 'email-already-in-use') {
-          _errorMessage = 'Account already exists. Please switch to Login.';
-        } else if (e.code == 'weak-password') {
-          _errorMessage = 'Password is too weak.';
-        } else {
-          _errorMessage = e.message;
-        }
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = "An unknown error occurred.";
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+    // Call the Controller (which handles Auth + Firestore Sync)
+    if (_isLoginMode) {
+      await controller.login(email, password);
+    } else {
+      await controller.signUp(email, password);
     }
   }
 
@@ -96,6 +43,26 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    
+    // Watch the controller state for Loading/Error
+    final authState = ref.watch(authControllerProvider);
+
+    // Listen for success to navigate
+    ref.listen(authControllerProvider, (previous, next) {
+      if (next.hasError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Error: ${next.error}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else if (!next.isLoading && !next.hasError && previous?.isLoading == true) {
+        // Only navigate if we just finished loading successfully
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        );
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -160,17 +127,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    if (_errorMessage != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 16.0),
-                        child: Text(
-                          _errorMessage!,
-                          style: TextStyle(color: colorScheme.error),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-
-                    if (_isLoading)
+                    // Loading Indicator or Button
+                    if (authState.isLoading)
                       const Center(child: CircularProgressIndicator())
                     else
                       Column(
@@ -195,7 +153,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: () {
                               setState(() {
                                 _isLoginMode = !_isLoginMode;
-                                _errorMessage = null;
                               });
                             },
                             child: Text(

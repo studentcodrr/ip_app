@@ -16,6 +16,11 @@ _$ProjectModelImpl _$$ProjectModelImplFromJson(Map<String, dynamic> json) =>
       createdAt: _fromJsonTimestamp(json['createdAt']),
       auditScore: (json['auditScore'] as num?)?.toInt() ?? 0,
       auditFeedback: json['auditFeedback'] as String? ?? '',
+      memberIds:
+          (json['memberIds'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
     );
 
 Map<String, dynamic> _$$ProjectModelImplToJson(_$ProjectModelImpl instance) =>
@@ -28,4 +33,5 @@ Map<String, dynamic> _$$ProjectModelImplToJson(_$ProjectModelImpl instance) =>
       'createdAt': _toJsonTimestamp(instance.createdAt),
       'auditScore': instance.auditScore,
       'auditFeedback': instance.auditFeedback,
+      'memberIds': instance.memberIds,
     };

@@ -24,10 +24,12 @@ class TaskModel with _$TaskModel {
   const factory TaskModel({
     required String id,
     required String name,
-    required String ownerId,
+    required String ownerId, // This will hold the UID of the assigned member
     @Default(TaskStatus.notStarted) TaskStatus status,
     @Default(Priority.medium) Priority priority,
+    @JsonKey(fromJson: _nullableTimestampFromJson, toJson: _nullableTimestampToJson)
     DateTime? startDate,
+    @JsonKey(fromJson: _nullableTimestampFromJson, toJson: _nullableTimestampToJson)
     DateTime? endDate,
     @Default([]) List<String> dependencies,
     required double orderIndex,

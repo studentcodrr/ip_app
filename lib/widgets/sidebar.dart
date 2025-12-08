@@ -2,23 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import 'package:taskflow_app/features/dashboard/dashboard_screen.dart';
+//<input> // Use 'hide' to prevent conflict with local providers if they still exist there
+import 'package:taskflow_app/features/dashboard/dashboard_screen.dart'
+    hide authStateChangesProvider, projectListProvider;
 import 'package:taskflow_app/features/create_project/create_project_screen.dart';
 import 'package:taskflow_app/settings_screen.dart';
 import 'package:taskflow_app/models/project_model.dart';
-import 'package:taskflow_app/models/search_history_model.dart'; 
+import 'package:taskflow_app/models/search_history_model.dart';
 import 'package:taskflow_app/features/project_features/project_board_screen.dart';
 import 'package:taskflow_app/providers/app_providers.dart';
-
-//<input> // Hide duplicate providers to resolve "Ambiguous Import" error
-import 'package:taskflow_app/repositories/project_repository.dart' hide projectRepoProvider;
-import 'package:taskflow_app/repositories/history_repository.dart' hide historyRepoProvider; 
-
 //<input> // Removed local authStateProvider; using centralized authStateChangesProvider
 
 final sidebarProjectsProvider = StreamProvider<List<ProjectModel>>((ref) {
   final authState = ref.watch(authStateChangesProvider);
-  
+
   return authState.when(
     data: (user) {
       if (user == null) return const Stream.empty();
@@ -45,19 +42,16 @@ final sidebarHistoryProvider = StreamProvider<List<SearchHistoryModel>>((ref) {
 class Sidebar extends ConsumerWidget {
   final String currentPage;
 
-  const Sidebar({
-    super.key,
-    required this.currentPage,
-  });
+  const Sidebar({super.key, required this.currentPage});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     final projectsAsync = ref.watch(sidebarProjectsProvider);
     final historyAsync = ref.watch(sidebarHistoryProvider);
-    
+
     final user = FirebaseAuth.instance.currentUser;
 
     return Drawer(
@@ -72,7 +66,8 @@ class Sidebar extends ConsumerWidget {
               currentAccountPicture: CircleAvatar(
                 backgroundColor: colorScheme.onPrimary,
                 child: Text(
-                  (user?.email?.isNotEmpty == true ? user!.email![0] : "G").toUpperCase(),
+                  (user?.email?.isNotEmpty == true ? user!.email![0] : "G")
+                      .toUpperCase(),
                   style: TextStyle(fontSize: 24, color: colorScheme.primary),
                 ),
               ),
@@ -89,7 +84,9 @@ class Sidebar extends ConsumerWidget {
                 Navigator.pop(context);
                 if (currentPage != 'Dashboard') {
                   Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const DashboardScreen(),
+                    ),
                   );
                 }
               },
@@ -105,7 +102,9 @@ class Sidebar extends ConsumerWidget {
                 if (currentPage != 'CreateProject') {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const CreateProjectScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const CreateProjectScreen(),
+                    ),
                   );
                 }
               },
@@ -119,9 +118,11 @@ class Sidebar extends ConsumerWidget {
               onTap: () {
                 Navigator.pop(context);
                 if (currentPage != 'Settings') {
-                   Navigator.push(
+                  Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsScreen(),
+                    ),
                   );
                 }
               },
@@ -139,13 +140,18 @@ class Sidebar extends ConsumerWidget {
                     title: Text(project.name),
                     dense: true,
                     contentPadding: const EdgeInsets.only(left: 24, right: 16),
-                    leading: Icon(Icons.circle, size: 8, color: Color(project.colorValue)),
+                    leading: Icon(
+                      Icons.circle,
+                      size: 8,
+                      color: Color(project.colorValue),
+                    ),
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => ProjectBoardScreen(project: project),
+                          builder: (_) =>
+                              ProjectBoardScreen(projectId: project.id),
                         ),
                       );
                     },
@@ -168,20 +174,38 @@ class Sidebar extends ConsumerWidget {
                     return [
                       const Padding(
                         padding: EdgeInsets.all(16.0),
-                        child: Text("No recent searches.", style: TextStyle(color: Colors.grey)),
-                      )
+                        child: Text(
+                          "No recent searches.",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
                     ];
                   }
                   return history.map((item) {
                     final dateStr = DateFormat('MM/dd').format(item.createdAt);
                     return ListTile(
-                      title: Text(item.description, maxLines: 1, overflow: TextOverflow.ellipsis),
-                      subtitle: Text("${item.strategy} • $dateStr", maxLines: 1, overflow: TextOverflow.ellipsis),
+                      title: Text(
+                        item.description,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        "${item.strategy} • $dateStr",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       dense: true,
-                      leading: const Icon(Icons.replay, size: 16, color: Colors.grey),
-                      contentPadding: const EdgeInsets.only(left: 24, right: 16),
+                      leading: const Icon(
+                        Icons.replay,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
+                      contentPadding: const EdgeInsets.only(
+                        left: 24,
+                        right: 16,
+                      ),
                       onTap: () {
-                        Navigator.pop(context); 
+                        Navigator.pop(context);
                         Navigator.push(
                           context,
                           MaterialPageRoute(

@@ -11,7 +11,7 @@ class GeminiService {
 
   GeminiService({http.Client? client}) : _client = client ?? http.Client();
 
-  static const String backendUrl = "http://127.0.0.1:5000/generate-plan";
+  static const String backendUrl = "http://localhost:5000/generate-plan";
 
   Future<Map<String, dynamic>> generateProjectStructure(
     String description,

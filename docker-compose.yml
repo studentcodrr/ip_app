@@ -1,0 +1,36 @@
+
+services:
+  # 1. PYTHON BACKEND SERVICE
+  backend:
+    # Use the Dockerfile in the 'services' directory
+    build:
+      context: ./lib/services 
+      dockerfile: Dockerfile
+    # Map the internal container port 5000 to the host port 5000
+    ports:
+      - "5000:5000"
+    # Keep the service running
+    restart: always
+    env_file:
+      - ./lib/services/.env
+    # Important: Ensure the Flask app listens on 0.0.0.0 (already done in app.py fix)
+    # Important: The service name 'backend' will be the hostname used by the frontend
+
+  # 2. FLUTTER FRONTEND SERVICE
+  frontend:
+    # Use the multi-stage Dockerfile we created
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    # Map internal container port 80 (Nginx default) to host port 8080 (or 80)
+    ports:
+      - "8080:80"
+    # Wait for the backend to be ready before starting the frontend (optional, but good practice)
+    depends_on:
+      - backend
+    restart: always
+
+# Define a network for the services to communicate internally
+networks:
+  default:
+    driver: bridge

@@ -5,11 +5,15 @@ import os
 import re
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from groq import Groq 
+from groq import Groq
+from dotenv import load_dotenv 
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
+#---<CONFIGURATION>---
 API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 
@@ -19,7 +23,7 @@ if not API_KEY or not GROQ_API_KEY:
 API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
 groq_client = Groq(api_key=GROQ_API_KEY)
 
-SYSTEM_PROMPT_TEMPLATE = """You are an expert Project Manager. Create a realistic execution plan based on the user's description and strategy.
+SYSTEM_PROMPT_TEMPLATE = """You are an expert Project Manager. Create a realistic execution plan.
 
 SCHEDULING LOGIC:
 1. **Analyze Dependencies:** Sequential tasks must obey start/end constraints. Independent tasks should run PARALLEL.
@@ -66,6 +70,7 @@ PROJECT_PLAN_SCHEMA = {
     "required": ["projectName", "groups"]
 }
 
+#---<HELPERS>---
 def extract_json_from_text(text):
     """
     Aggressively finds the JSON object within a text block.
@@ -109,17 +114,17 @@ def validate_plan_with_groq(generated_plan, user_strategy):
     audit_prompt = f"""
     You are a helpful Project Management Coach. Review this plan against the strategy: "{user_strategy}".
     
-    PLAN DATA: {json.dumps(generated_plan)}
+    PLAN: {json.dumps(generated_plan)}
 
     SCORING RULES:
     - 100: Perfect plan.
-    - 80-99: Good plan, minor tweaks needed.
-    - 50-79: Acceptable, but has some logic gaps.
+    - 80-99: Good plan.
     - < 50: Broken logic.
 
-    FEEDBACK FORMATTING:
-    - The 'feedback' field MUST be a single string using "Step X:" as the separator.
-    - Example: "Step 1: Timeline is good. Step 2: Strategy matches. Step 3: Increase design duration."
+    FEEDBACK FORMATTING (CRITICAL):
+    - Return 'feedback' as a SINGLE string.
+    - Use "Step 1:", "Step 2:", "Step 3:" as separators.
+    - Example: "Step 1: Timeline is good. Step 2: Strategy matches. Step 3: Check durations."
 
     Respond with JSON ONLY:
     {{
@@ -141,21 +146,21 @@ def validate_plan_with_groq(generated_plan, user_strategy):
         )
         
         raw_content = response.choices[0].message.content
-        # <input> // CRITICAL FIX: Use the cleaner function
+        #Clean the response before parsing
         cleaned_content = extract_json_from_text(raw_content)
         return json.loads(cleaned_content)
         
     except Exception as e:
         print(f"Groq Audit Failed: {e}")
         return {
-            "confidence_score": 80, 
+            "confidence_score": 80, #Fallback to prevent UI hiding
             "feedback": "Step 1: Auditor unavailable. Step 2: Please review manually.",
             "specific_issues": []
         }
 
 @app.route('/', methods=['GET'])
 def home():
-    return "TaskFlow AI Server Running", 200
+    return "TaskFlow Server Running", 200
 
 @app.route('/generate-plan', methods=['POST'])
 def generate_plan_endpoint():
@@ -175,7 +180,7 @@ def generate_plan_endpoint():
         final_score = 0
         final_report = {}
 
-        # <input> // Self-healing loop
+        #Optimizing loop
         for attempt in range(2):
             audit = validate_plan_with_groq(plan_json, user_strategy)
             
@@ -205,6 +210,7 @@ def generate_plan_endpoint():
         return jsonify(response_data), 200
 
     except Exception as e:
+        print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":

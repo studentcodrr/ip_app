@@ -27,9 +27,11 @@ mixin _$ProjectModel {
   String get ownerId => throw _privateConstructorUsedError;
   int get colorValue => throw _privateConstructorUsedError;
   @JsonKey(fromJson: _fromJsonTimestamp, toJson: _toJsonTimestamp)
-  DateTime get createdAt => throw _privateConstructorUsedError; //<input> // NEW FIELDS (Required for Audit Feature)
+  DateTime get createdAt => throw _privateConstructorUsedError;
   int get auditScore => throw _privateConstructorUsedError;
-  String get auditFeedback => throw _privateConstructorUsedError;
+  String get auditFeedback =>
+      throw _privateConstructorUsedError; //<input> // List of UIDs who have access (Owner + Invitees)
+  List<String> get memberIds => throw _privateConstructorUsedError;
 
   /// Serializes this ProjectModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -58,6 +60,7 @@ abstract class $ProjectModelCopyWith<$Res> {
     DateTime createdAt,
     int auditScore,
     String auditFeedback,
+    List<String> memberIds,
   });
 }
 
@@ -84,6 +87,7 @@ class _$ProjectModelCopyWithImpl<$Res, $Val extends ProjectModel>
     Object? createdAt = null,
     Object? auditScore = null,
     Object? auditFeedback = null,
+    Object? memberIds = null,
   }) {
     return _then(
       _value.copyWith(
@@ -119,6 +123,10 @@ class _$ProjectModelCopyWithImpl<$Res, $Val extends ProjectModel>
                 ? _value.auditFeedback
                 : auditFeedback // ignore: cast_nullable_to_non_nullable
                       as String,
+            memberIds: null == memberIds
+                ? _value.memberIds
+                : memberIds // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
           )
           as $Val,
     );
@@ -144,6 +152,7 @@ abstract class _$$ProjectModelImplCopyWith<$Res>
     DateTime createdAt,
     int auditScore,
     String auditFeedback,
+    List<String> memberIds,
   });
 }
 
@@ -169,6 +178,7 @@ class __$$ProjectModelImplCopyWithImpl<$Res>
     Object? createdAt = null,
     Object? auditScore = null,
     Object? auditFeedback = null,
+    Object? memberIds = null,
   }) {
     return _then(
       _$ProjectModelImpl(
@@ -204,6 +214,10 @@ class __$$ProjectModelImplCopyWithImpl<$Res>
             ? _value.auditFeedback
             : auditFeedback // ignore: cast_nullable_to_non_nullable
                   as String,
+        memberIds: null == memberIds
+            ? _value._memberIds
+            : memberIds // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
       ),
     );
   }
@@ -222,7 +236,8 @@ class _$ProjectModelImpl implements _ProjectModel {
     required this.createdAt,
     this.auditScore = 0,
     this.auditFeedback = '',
-  });
+    final List<String> memberIds = const [],
+  }) : _memberIds = memberIds;
 
   factory _$ProjectModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$ProjectModelImplFromJson(json);
@@ -241,17 +256,26 @@ class _$ProjectModelImpl implements _ProjectModel {
   @override
   @JsonKey(fromJson: _fromJsonTimestamp, toJson: _toJsonTimestamp)
   final DateTime createdAt;
-  //<input> // NEW FIELDS (Required for Audit Feature)
   @override
   @JsonKey()
   final int auditScore;
   @override
   @JsonKey()
   final String auditFeedback;
+  //<input> // List of UIDs who have access (Owner + Invitees)
+  final List<String> _memberIds;
+  //<input> // List of UIDs who have access (Owner + Invitees)
+  @override
+  @JsonKey()
+  List<String> get memberIds {
+    if (_memberIds is EqualUnmodifiableListView) return _memberIds;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_memberIds);
+  }
 
   @override
   String toString() {
-    return 'ProjectModel(id: $id, name: $name, description: $description, ownerId: $ownerId, colorValue: $colorValue, createdAt: $createdAt, auditScore: $auditScore, auditFeedback: $auditFeedback)';
+    return 'ProjectModel(id: $id, name: $name, description: $description, ownerId: $ownerId, colorValue: $colorValue, createdAt: $createdAt, auditScore: $auditScore, auditFeedback: $auditFeedback, memberIds: $memberIds)';
   }
 
   @override
@@ -271,7 +295,11 @@ class _$ProjectModelImpl implements _ProjectModel {
             (identical(other.auditScore, auditScore) ||
                 other.auditScore == auditScore) &&
             (identical(other.auditFeedback, auditFeedback) ||
-                other.auditFeedback == auditFeedback));
+                other.auditFeedback == auditFeedback) &&
+            const DeepCollectionEquality().equals(
+              other._memberIds,
+              _memberIds,
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -286,6 +314,7 @@ class _$ProjectModelImpl implements _ProjectModel {
     createdAt,
     auditScore,
     auditFeedback,
+    const DeepCollectionEquality().hash(_memberIds),
   );
 
   /// Create a copy of ProjectModel
@@ -313,6 +342,7 @@ abstract class _ProjectModel implements ProjectModel {
     required final DateTime createdAt,
     final int auditScore,
     final String auditFeedback,
+    final List<String> memberIds,
   }) = _$ProjectModelImpl;
 
   factory _ProjectModel.fromJson(Map<String, dynamic> json) =
@@ -330,11 +360,13 @@ abstract class _ProjectModel implements ProjectModel {
   int get colorValue;
   @override
   @JsonKey(fromJson: _fromJsonTimestamp, toJson: _toJsonTimestamp)
-  DateTime get createdAt; //<input> // NEW FIELDS (Required for Audit Feature)
+  DateTime get createdAt;
   @override
   int get auditScore;
   @override
-  String get auditFeedback;
+  String get auditFeedback; //<input> // List of UIDs who have access (Owner + Invitees)
+  @override
+  List<String> get memberIds;
 
   /// Create a copy of ProjectModel
   /// with the given fields replaced by the non-null parameter values.

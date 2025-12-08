@@ -7,12 +7,8 @@ import 'package:taskflow_app/features/create_project/create_project_screen.dart'
 import 'package:taskflow_app/providers/app_providers.dart';
 import 'package:taskflow_app/widgets/sidebar.dart';
 
+//<input> // REMOVED DUPLICATE: authStateChangesProvider definition
 
-final authStateChangesProvider = StreamProvider<User?>((ref) {
-  return FirebaseAuth.instance.authStateChanges();
-});
-// --- PROJECT LIST PROVIDER ---
-// This remains local because it's specific to the dashboard logic
 final projectListProvider = StreamProvider<List<ProjectModel>>((ref) {
   // 1. Use the central Auth Provider
   final authState = ref.watch(authStateChangesProvider);
@@ -116,7 +112,8 @@ class DashboardScreen extends ConsumerWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ProjectBoardScreen(project: project),
+                        // <input> // FIX: Pass the project ID instead of the full object
+                        builder: (_) => ProjectBoardScreen(projectId: project.id),
                       ),
                     );
                   },

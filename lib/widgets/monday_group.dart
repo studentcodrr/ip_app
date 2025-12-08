@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskflow_app/models/group_model.dart';
 import 'package:taskflow_app/models/task_model.dart';
+import 'package:taskflow_app/models/app_user_model.dart';
 import 'package:taskflow_app/providers/app_providers.dart';
 import 'package:taskflow_app/widgets/monday_task_row.dart';
 import 'package:taskflow_app/widgets/inline_text_editor.dart'; 
@@ -11,8 +12,10 @@ class ProjectGroupPair {
   final String projectId;
   final String groupId;
   const ProjectGroupPair(this.projectId, this.groupId);
+  
   @override
   bool operator ==(Object other) => other is ProjectGroupPair && other.projectId == projectId && other.groupId == groupId;
+  
   @override
   int get hashCode => Object.hash(projectId, groupId);
 }
@@ -24,8 +27,14 @@ final groupTasksProvider = StreamProvider.family<List<TaskModel>, ProjectGroupPa
 class MondayGroup extends ConsumerWidget {
   final String projectId;
   final GroupModel group;
+  final List<AppUserModel> projectMembers;
 
-  const MondayGroup({super.key, required this.projectId, required this.group});
+  const MondayGroup({
+    super.key, 
+    required this.projectId, 
+    required this.group,
+    this.projectMembers = const [],
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,10 +46,12 @@ class MondayGroup extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // GROUP HEADER
           Row(
             children: [
               Icon(Icons.keyboard_arrow_down, color: groupColor),
               const SizedBox(width: 8),
+              
               Expanded(
                 child: InlineTextEditor(
                   text: group.name,
@@ -54,12 +65,16 @@ class MondayGroup extends ConsumerWidget {
                   },
                 ),
               ),
+              
               const SizedBox(width: 8),
+              
               Text(
                 tasksAsync.valueOrNull?.length.toString() ?? "0",
                 style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
               ),
+              
               const SizedBox(width: 8),
+              
               PopupMenuButton<String>(
                 icon: Icon(Icons.more_horiz, color: Colors.grey.shade400),
                 onSelected: (value) {
@@ -83,6 +98,8 @@ class MondayGroup extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
+
+          // TASK TABLE
           Material(
             elevation: 2,
             shadowColor: Colors.black.withOpacity(0.05),
@@ -91,6 +108,7 @@ class MondayGroup extends ConsumerWidget {
             child: Column(
               children: [
                 _buildTableHeader(context),
+                
                 tasksAsync.when(
                   data: (tasks) => ListView.separated(
                     shrinkWrap: true,
@@ -101,13 +119,15 @@ class MondayGroup extends ConsumerWidget {
                       return MondayTaskRow(
                         task: tasks[index], 
                         projectId: projectId, 
-                        groupId: group.id
+                        groupId: group.id,
+                        projectMembers: projectMembers,
                       );
                     },
                   ),
                   loading: () => const LinearProgressIndicator(minHeight: 2),
                   error: (e, s) => Padding(padding: const EdgeInsets.all(16), child: Text("Error: $e")),
                 ),
+                
                 _buildAddTaskFooter(ref),
               ],
             ),
@@ -127,12 +147,34 @@ class MondayGroup extends ConsumerWidget {
       ),
       child: const Row(
         children: [
+          // 1. Spacer for Drag Handle
           SizedBox(width: 30), 
+          
+          // 2. Item Name
           Expanded(flex: 6, child: Text("Item", style: TextStyle(color: Colors.grey, fontSize: 12))),
+          
+          // 3. OWNER (Fixed Style)
+          SizedBox(
+            width: 40, 
+            child: Center(
+              child: Text(
+                "Owner", 
+                style: TextStyle(
+                  color: Colors.grey, 
+                  fontSize: 12, // Matched size
+                  // Removed bold to match other headers
+                )
+              )
+            )
+          ),
+          
+          // 4. Other Columns
           Expanded(flex: 3, child: Center(child: Text("Status", style: TextStyle(color: Colors.grey, fontSize: 12)))),
           Expanded(flex: 3, child: Center(child: Text("Priority", style: TextStyle(color: Colors.grey, fontSize: 12)))),
-          Expanded(flex: 4, child: Center(child: Text("Timeline", style: TextStyle(color: Colors.grey, fontSize: 12)))),
-          SizedBox(width: 40),
+          Expanded(flex: 4, child: Center(child: Text("Deadline", style: TextStyle(color: Colors.grey, fontSize: 12)))),
+          
+          // 5. Spacer for Delete Button
+          SizedBox(width: 40), 
         ],
       ),
     );
@@ -148,6 +190,8 @@ class MondayGroup extends ConsumerWidget {
         decoration: const BoxDecoration(
           borderRadius: BorderRadius.only(bottomLeft: Radius.circular(8), bottomRight: Radius.circular(8)),
         ),
+        // Align "Add Item" text with the "Item" column above
+        // 30px (Drag box) + 12px (Container padding) = 42px
         padding: const EdgeInsets.only(left: 42), 
         alignment: Alignment.centerLeft,
         child: Row(

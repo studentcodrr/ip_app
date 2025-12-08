@@ -1,0 +1,31 @@
+# <input> // Use the MODERN, maintained Flutter image (Fixes 'unknown option' errors)
+FROM ghcr.io/cirruslabs/flutter:3.27.1 AS builder
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the project files
+COPY . .
+
+RUN flutter --version
+
+# <input> // Explicitly enable web support to ensure the 'build web' command works
+RUN flutter config --enable-web
+
+# Get dependencies
+RUN flutter pub get
+
+# Build the web application
+# This image has a modern Flutter version that understands --web-renderer
+RUN flutter build web --release --web-renderer html
+
+# --- Stage 2: Serve with Nginx ---
+FROM nginx:alpine
+
+# Copy the compiled assets from the build stage
+COPY --from=builder /app/build/web /usr/share/nginx/html
+
+# Expose port 80
+EXPOSE 80
+
+# Nginx starts automatically

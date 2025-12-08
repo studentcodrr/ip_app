@@ -15,9 +15,11 @@ class ProjectModel with _$ProjectModel {
     @JsonKey(fromJson: _fromJsonTimestamp, toJson: _toJsonTimestamp)
     required DateTime createdAt,
     
-    //<input> // NEW FIELDS (Required for Audit Feature)
     @Default(0) int auditScore,
     @Default('') String auditFeedback,
+    
+    //<input> // List of UIDs who have access (Owner + Invitees)
+    @Default([]) List<String> memberIds, 
   }) = _ProjectModel;
 
   factory ProjectModel.fromJson(Map<String, dynamic> json) => _$ProjectModelFromJson(json);
@@ -33,9 +35,11 @@ class ProjectModel with _$ProjectModel {
       colorValue: (data['colorValue'] as int?) ?? 0xFF42A5F5,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       
-      //<input> // Map from Firestore
       auditScore: (data['auditScore'] as int?) ?? 0,
       auditFeedback: (data['auditFeedback'] as String?) ?? '',
+      
+      //<input> // Parse list safely
+      memberIds: List<String>.from(data['memberIds'] ?? []), 
     );
   }
 }
