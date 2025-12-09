@@ -2,7 +2,7 @@
 
 TaskFlow is a Flutter-based project management application that leverages Generative AI (Gemini & Llama 3) to automatically break down high-level project goals into actionable, scheduled tasks. It features a modern Monday.com-style interface, team collaboration, and real-time synchronization.
 
-## 🏗️ Architecture
+## 🩷 Architecture
 
 The application follows a **Client-Server** architecture using **Riverpod** for state management and **Repository Pattern** for data handling.
 
@@ -26,7 +26,7 @@ The application follows a **Client-Server** architecture using **Riverpod** for 
 
 ---
 
-## 🚀 Services & APIs
+## 🩷 Services & APIs
 
 ### 1. Backend Service (`app.py`)
 A lightweight Flask server acting as the AI Gateway.
@@ -47,7 +47,7 @@ A lightweight Flask server acting as the AI Gateway.
 
 ---
 
-## 🛠️ Installation & Setup
+## 🩷 Installation & Setup
 
 ### Prerequisites
 * [Flutter SDK](https://docs.flutter.dev/get-started/install) (3.10+)
