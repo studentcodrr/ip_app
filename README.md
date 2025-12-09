@@ -13,12 +13,12 @@ The application follows a **Client-Server** architecture using **Riverpod** for 
 
 ### System Components:
 1.  **Frontend (Flutter):**
-    * **UI Layer:** Interactive Board, Timeline (Gantt) View, Authentication screens.
+    * **UI Layer:** Interactive Dashboard, Timeline (Gantt) View, Monday Task View, Authentication, Generation and Settings screens.
     * **State Management:** Riverpod for reactive UI updates and dependency injection.
     * **Data Layer:** Repositories for Firestore interaction and Services for API communication.
 2.  **Backend (Python Flask):**
     * **Orchestrator:** Handles requests from the mobile app.
-    * **Generative AI:** Calls **Google Gemini 1.5 Flash** to generate project structures.
+    * **Generative AI:** Calls **Google Gemini 2.5 Flash** to generate project structures.
     * **Auditor:** Calls **Llama 3 (via Groq)** to validate and score the quality of Gemini's plans.
 3.  **Database (Firebase):**
     * **Firestore:** Real-time NoSQL database storing Users, Projects, Groups, and Tasks.
@@ -36,14 +36,14 @@ A lightweight Flask server acting as the AI Gateway.
     * **Process:**
         1.  Prompts **Gemini** to generate a JSON plan with phases, tasks, and offsets.
         2.  Sends the plan to **Groq (Llama 3)** to audit logic and feasibility.
-        3.  If the audit score is < 80, it auto-heals (asks Gemini to fix specific issues).
+        3.  If the audit score is < 80, it auto-heals (asks Gemini to fix specific issues - up to 2 times for efficiency).
     * **Output:** Returns the final Project Plan JSON + Audit Score + Feedback steps.
 
 ### 2. Firestore Database
-* **Users:** `users/{uid}` (Stores profile & search history).
-* **Projects:** `projects/{projectId}` (Stores metadata like owner & members).
-    * **Groups:** `projects/{id}/groups/{groupId}` (Phases like "Planning", "Dev").
-        * **Tasks:** `.../tasks/{taskId}` (Individual items with dates & owners).
+* **Users:** `users/{uid}` (Stores profile details - Display Name, Email, Last Seen - & search history).
+* **Projects:** `projects/{projectId}` (Stores metadata like owner & members, as well as Audit Details).
+    * **Groups:** `projects/{id}/groups/{groupId}` (Phases like "Planning", "Dev" and their order).
+        * **Tasks:** `.../tasks/{taskId}` (Individual items with dates, name, editors, state of the task).
 
 ---
 
