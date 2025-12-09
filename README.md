@@ -6,10 +6,25 @@ TaskFlow is a Flutter-based project management application that leverages Genera
 
 The application follows a **Client-Server** architecture using **Riverpod** for state management and **Repository Pattern** for data handling.
 
-
-
-[Image of client server architecture]
-
++---------------------+           +---------------------+
+| FRONTEND (Flutter)  | <------> | FIREBASE (Data/Auth)|
+|   - UI Components   |          +---------------------+
+|   - Riverpod State  |
++---------------------+
+            |
+            | (Request Plan)
+            v
++---------------------+
+| BACKEND (Python)    |
+|   - Flask API       |
+|   - Orchestrator    |
++---------------------+
+        /     \
+       v       v
++-------------+ +---------------------+
+| GEMINI      | | GROQ (Llama 3)      |
+| (Generator) | | (Auditor / Scorer)  |
++-------------+ +---------------------+
 
 ### System Components:
 1.  **Frontend (Flutter):**
@@ -24,46 +39,6 @@ The application follows a **Client-Server** architecture using **Riverpod** for 
     * **Firestore:** Real-time NoSQL database storing Users, Projects, Groups, and Tasks.
     * **Authentication:** Firebase Auth for secure email/password login.
 
-graph TD
-    subgraph Client (Frontend App)
-        FLUTTER[Flutter Web UI];
-    end
-
-    subgraph Backend (AI Gateway - Python/Flask)
-        direction LR
-        API[Flask API: /generate-plan];
-        AUDIT[Groq: Llama 3 Auditor];
-        GEMINI[Gemini 1.5 Flash Generator];
-    end
-
-    subgraph Data & Identity
-        FIREBASE[Firebase / Firestore DB];
-        AUTH[Firebase Auth];
-    end
-
-    % 1. Frontend Access
-    FLUTTER --> |Generates Plan| API;
-    FLUTTER <--> |Real-time Sync & R/W| FIREBASE;
-    FLUTTER --> |Login/User State| AUTH;
-
-    % 2. Backend Orchestration
-    API --> |Generate Plan Request| GEMINI;
-    API --> |Audit Plan Request| AUDIT;
-    GEMINI --> API; 
-    AUDIT --> API;
-    API --> |Saves Plan| FIREBASE;
-
-    % 3. Data Relationships
-    FIREBASE --> AUTH;
-
-    style Client fill:#DDEBF7,stroke:#333
-    style Backend fill:#FBE4D5,stroke:#333
-    style Data fill:#FFF2CC,stroke:#333
-    
-    style FLUTTER fill:#2196F3,color:#FFF
-    style API fill:#FF9800,color:#FFF
-    style GEMINI fill:#FFC107,color:#000
-    style AUDIT fill:#B0BEC5,color:#000
 
 ---
 
