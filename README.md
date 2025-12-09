@@ -7,35 +7,34 @@ TaskFlow is a Flutter-based project management application that leverages Genera
 The application follows a **Client-Server** architecture using **Riverpod** for state management and **Repository Pattern** for data handling.
 
 ```mermaid
-graph LR
-    %% Nodes and System Components
-    Client(Flutter Web UI)
-    API[Python/Flask API];
-    Gemini{Gemini 1.5 Flash Generator};
-    Groq{Groq / Llama 3 Auditor};
-    Firebase[(Firestore DB / Auth)];
+graph TD
+    %% Main Architecture Flow (Top-Down)
 
-    %% 1. Frontend Flow
-    Client --> |1. Request Plan| API;
-    Client <--> |5. Real-time Data R/W| Firebase;
+    subgraph Client Application
+        C[Flutter Web UI]
+    end
 
-    %% 2. Backend Orchestration Flow
-    API --> |2a. Generation Prompt| Gemini;
-    API --> |2b. Audit Check| Groq;
-    Gemini --> |3a. Result| API;
-    Groq --> |3b. Score/Feedback| API;
-    API --> |4. Save Final Plan| Firebase;
+    subgraph API Gateway
+        B[Python/Flask API Orchestrator]
+    end
 
-    %% Styling for Visual Clarity
-    classDef clientStyle fill:#2196F3,stroke:#333,color:#FFF;
-    classDef apiStyle fill:#FF9800,stroke:#333,color:#FFF;
-    classDef dbStyle fill:#FFF2CC,stroke:#333;
+    subgraph AI Layer
+        G[Gemini 1.5 Flash Generator]
+        L[Groq / Llama 3 Auditor]
+    end
 
-    class Client clientStyle
-    class API apiStyle
-    class Gemini dbStyle
-    class Groq dbStyle
-    class Firebase dbStyle
+    subgraph Data & Identity
+        D[Firestore DB / Firebase Auth]
+    end
+
+    %% Connections
+    C --> |1. Request Plan| B;
+    B --> |2a. Generate| G;
+    B --> |2b. Audit| L;
+    G --> B;
+    L --> B;
+    B --> |3. Save Final Plan| D;
+    C <--> |4. Real-time R/W| D;
 ```
 
 ### System Components:
