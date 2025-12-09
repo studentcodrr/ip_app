@@ -6,25 +6,37 @@ TaskFlow is a Flutter-based project management application that leverages Genera
 
 The application follows a **Client-Server** architecture using **Riverpod** for state management and **Repository Pattern** for data handling.
 
-+---------------------+           +---------------------+
-| FRONTEND (Flutter)  | <------> | FIREBASE (Data/Auth)|
-|   - UI Components   |          +---------------------+
-|   - Riverpod State  |
-+---------------------+
-            |
-            | (Request Plan)
-            v
-+---------------------+
-| BACKEND (Python)    |
-|   - Flask API       |
-|   - Orchestrator    |
-+---------------------+
-        /     \
-       v       v
-+-------------+ +---------------------+
-| GEMINI      | | GROQ (Llama 3)      |
-| (Generator) | | (Auditor / Scorer)  |
-+-------------+ +---------------------+
+```mermaid
+graph LR
+    %% Nodes and System Components
+    Client(Flutter Web UI)
+    API[Python/Flask API];
+    Gemini{Gemini 1.5 Flash Generator};
+    Groq{Groq / Llama 3 Auditor};
+    Firebase[(Firestore DB / Auth)];
+
+    %% 1. Frontend Flow
+    Client --> |1. Request Plan| API;
+    Client <--> |5. Real-time Data R/W| Firebase;
+
+    %% 2. Backend Orchestration Flow
+    API --> |2a. Generation Prompt| Gemini;
+    API --> |2b. Audit Check| Groq;
+    Gemini --> |3a. Result| API;
+    Groq --> |3b. Score/Feedback| API;
+    API --> |4. Save Final Plan| Firebase;
+
+    %% Styling for Visual Clarity
+    classDef clientStyle fill:#2196F3,stroke:#333,color:#FFF;
+    classDef apiStyle fill:#FF9800,stroke:#333,color:#FFF;
+    classDef dbStyle fill:#FFF2CC,stroke:#333;
+
+    class Client clientStyle
+    class API apiStyle
+    class Gemini dbStyle
+    class Groq dbStyle
+    class Firebase dbStyle
+```
 
 ### System Components:
 1.  **Frontend (Flutter):**
